@@ -5,7 +5,8 @@
  * Roster Plugin
  * Allow roster management easily
  *
- * get roster from server, handle presence, handle roster iq
+ * Get roster from server, handle presence, handle roster iq
+ * subscribe/unsubscribe, authorize/unauthorize presence subscription
  */
 Strophe.addConnectionPlugin('roster',
 {
@@ -58,6 +59,56 @@ Strophe.addConnectionPlugin('roster',
                                 this._onReceiveRosterSuccess.bind(this).prependArg(userCallback),
                                 this._onReceiveRosterError.bind(this).prependArg(userCallback));
     },
+    /**
+     * Find item by JID
+     * Parameters:
+     *     (String) jid
+     */
+    findItem : function(jid)
+    {
+        for (var i = 0; i < this.items.length; i++) {
+            if (this.items[i].jid == jid) {
+                return this.items[i];
+            }
+        }
+        return false;
+    },
+    /**
+     * Subscribe presence
+     * Parameters:
+     *     (String) jid
+     */
+    subscribe: function(jid)
+    {
+        this._connection.send($pres({to: jid, type: "subscribe"}));
+    },
+    /**
+     * Unsubscribe presence
+     * Parameters:
+     *     (String) jid
+     */
+    unsubscribe: function(jid)
+    {
+        this._connection.send($pres({to: jid, type: "unsubscribe"}));
+    },
+    /**
+     * Authorize presence subscription
+     * Parameters:
+     *     (String) jid
+     */
+    authorize: function(jid)
+    {
+        this._connection.send($pres({to: jid, type: "subscribed"}));
+    },
+    /**
+     * Unauthorize presence subscription
+     * Parameters:
+     *     (String) jid
+     */
+    unauthorize: function(jid)
+    {
+        this._connection.send($pres({to: jid, type: "unsubscribed"}));
+    },
 
     _onReceiveRosterSuccess: function(userCallback, stanza)
     {
@@ -75,7 +126,6 @@ Strophe.addConnectionPlugin('roster',
     {
         userCallback(this.items);
     },
-
     /**
      * Handle presence
      */
@@ -91,12 +141,9 @@ Strophe.addConnectionPlugin('roster',
             return true;
         }
         var type = presence.attr('type');
-        if (type == 'unavailable')
-        {
+        if (type == 'unavailable') {
             delete item.resources[Strophe.getResourceFromJid(jid)];
-        }
-        else
-        {
+        } else {
             // TODO: add timestamp
             item.resources[Strophe.getResourceFromJid(jid)] = {
                 show     : presence.find('show:first').text(),
@@ -106,7 +153,6 @@ Strophe.addConnectionPlugin('roster',
         }
         return true;
     },
-
     /**
      *
      */
@@ -127,22 +173,10 @@ Strophe.addConnectionPlugin('roster',
         return true;
     },
     /**
-     * Find item by JID
-     * Parameters:
-     *     (String) jid
-     */
-    findItem : function(jid) {
-        for (var i = 0; i < this.items.length; i++) {
-            if (this.items[i].jid == jid) {
-                return this.items[i];
-            }
-        }
-        return false;
-    },
-    /**
      * Update roster item
      */
-    _updateItem : function(aItem) {
+    _updateItem : function(aItem)
+    {
         var querySelector = this.querySelector;
         var jid           = aItem.attr("jid");
         var name          = aItem.attr("name");
