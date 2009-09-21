@@ -109,6 +109,28 @@ Strophe.addConnectionPlugin('roster',
     {
         this._connection.send($pres({to: jid, type: "unsubscribed"}));
     },
+    /**
+     * Update roster item
+     * Parameters:
+     *     (String) jid
+     *     (String) name
+     *     (Array) groups
+     *     (Function) call_back
+     */
+    update: function(jid, name, groups, call_back)
+    {
+        var item = this.findItem(jid);
+        var newName = name || name;
+        var newGroups = groups || item.group;
+        var iq = $iq({type: 'set'}).c('query', {xmlns: Strophe.NS.ROSTER}).c('item', {jid: item.jid,
+                                                                                      name: newName,
+                                                                                      subscription: item.subscription});
+        for (var i = 0; i < newGroups.length; i++)
+        {
+            iq.c('group').t(newGroups[i]).up();
+        }
+        this._connection.sendIQ(iq, call_back, call_back);
+    },
 
     _onReceiveRosterSuccess: function(userCallback, stanza)
     {
@@ -173,7 +195,7 @@ Strophe.addConnectionPlugin('roster',
         return true;
     },
     /**
-     * Update roster item
+     * Update internal representation of roster item
      */
     _updateItem : function(aItem)
     {
