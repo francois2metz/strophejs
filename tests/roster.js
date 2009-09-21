@@ -254,3 +254,25 @@ jackTest("roster should send presence unsubscribe on unsubscribe", function(mock
     rosterPlugin.unsubscribe('romeo@example.net');
     expect(1);
 });
+
+jackTest("roster should send updated roster item on update", function(mockConnection) {
+
+    jack.expect("mockConnection.sendIQ")
+        .once()
+        .mock(function(stanza) {
+                  equals(stanza.toString(), "<iq type='set' xmlns='jabber:client'><query xmlns='jabber:iq:roster'>"
+                                             + "<item jid='romeo@example.net' "
+                                                   + "name='Example' "
+                                                   + "subscription='both'>"
+                                                   + "<group>Foo</group><group>Bar</group>"
+                                             + "</item></query></iq>");
+              });
+    rosterPlugin.init(mockConnection);
+    rosterPlugin._updateItem($('<item jid="romeo@example.net" '
+                                   + 'name="Romeo" '
+                                   + 'subscription="both">'
+                                   + '<group>Friends</group>'
+                                + '</item>'));
+             rosterPlugin.update('romeo@example.net', 'Example', ["Foo", "Bar"]);
+    expect(1);
+});
