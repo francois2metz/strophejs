@@ -13,7 +13,7 @@ function object2Array(object) {
     return a;
 }
 
-module("Roster");
+module("plugins.Roster");
 
 // shortcut access
 var rosterPlugin = Strophe._connectionPlugins["roster"];
