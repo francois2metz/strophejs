@@ -310,7 +310,6 @@ jackTest("roster update should not update name if null value", function(mockConn
     jack.expect("mockConnection.sendIQ")
         .once()
         .mock(function(stanza) {
-                  console.log(stanza.toString());
                   equals(stanza.toString(), "<iq type='set' xmlns='jabber:client'><query xmlns='jabber:iq:roster'>"
                                              + "<item jid='romeo@example.net' "
                                                    + "name='Romeo' "
