@@ -2,15 +2,20 @@
   Copyright 2009, François de Metz <francois@2metz.fr>
   Based on pubsub plugin Copyright 2008, Stanziq  Inc.
 */
-/**
+/** Class: pep
  * Implement Personnal Eventing Protocol
- * XEP 163
+ * http://xmpp.org/extensions/xep-0163.html
  * Need pubsub plugin
  */
 Strophe.addConnectionPlugin('pep',
 {
     _connection: null,
-
+    /** Function: init
+     * Plugin init
+     *
+     * Parameters:
+     *   (Strophe.Connection) conn - Strophe connection
+     */
     init: function(conn)
     {
         this._connection = conn;
@@ -21,40 +26,43 @@ Strophe.addConnectionPlugin('pep',
         Strophe.addNamespace('PEP_USER_TUNE',
                              'http://jabber.org/protocol/tune');
     },
-    /**
+    /** Function: publishUserLocation
      * User Location
-     * XEP 80
+     * http://xmpp.org/extensions/xep-0080.html
+     *
      * Parameters:
      *   (Json) data - data to publish {country: 'France', locality: 'Paris'}
-     *   {Function} call_back
+     *   (Function) call_back - callback function
      */
     publishUserLocation : function(data, call_back)
     {
         this.publish(this._connection.jid, Strophe.NS.PEP_USER_LOCATION, "geoloc", data, call_back);
     },
-    /**
+    /** Function: publishUserMood
      * User Mood
-     * XEP 107
+     * http://xmpp.org/extensions/xep-0107.html
+     *
      * Parameters:
      *   (Json) data - data to publish {text: 'Hello World', annoyed: null}
-     *   {Function} call_back
+     *   (Function) call_back
      */
     publishUserMood: function(data, call_back)
     {
         this.publish(this._connection.jid, Strophe.NS.PEP_USER_MOOD, "mood", data, call_back);
     },
-    /**
+    /** Function: publishUserTune
      * User Tune
-     * XEP 118
+     * http://xmpp.org/extensions/xep-0118.html
+     *
      * Parameters:
-     *   (Json) data - data to publish {artist: 'Yes', title: 'Heart of the Sunrise'}
-     *   {Function} call_back
+     *   (Json) data - data to publish. {artist: 'Yes', title: 'Heart of the Sunrise'}.
+     *   (Function) call_back -
      */
     publishUserTune: function(data, call_back)
     {
         this.publish(this._connection.jid, Strophe.NS.PEP_USER_TUNE, "tune", data, call_back);
     },
-    /***Function
+    /** Function: publish
 
      Publish and item to the given pep node.
 
@@ -102,8 +110,9 @@ Strophe.addConnectionPlugin('pep',
         return pubid;
     },
 
-    /**
+    /** Function: subscribeToUserLocation
      * Subscribe to user location
+     *
      * Parameters:
      *   (String) to - jid node
      *   (Dictionary) options -  The configuration options for the  node.
@@ -115,8 +124,9 @@ Strophe.addConnectionPlugin('pep',
     {
         return this.subscribe(this.connection.jid, to, Strophe.NS.PEP_USER_LOCATION, options, event_cb, call_back);
     },
-    /**
+    /** Function: subscribeToUserMood
      * Subscribe to user mood
+     *
      * Parameters:
      *   (String) to - jid node
      *   (Dictionary) options -  The configuration options for the  node.
@@ -128,8 +138,9 @@ Strophe.addConnectionPlugin('pep',
     {
         return this.subscribe(this.connection.jid, to, Strophe.NS.PEP_USER_MOOD, options, event_cb, call_back);
     },
-        /**
+    /** Function subscribeToUserTune
      * Subscribe to user tune
+     *
      * Parameters:
      *   (String) to - jid node
      *   (Dictionary) options -  The configuration options for the  node.
@@ -141,7 +152,7 @@ Strophe.addConnectionPlugin('pep',
     {
         return this.subscribe(this.connection.jid, to, Strophe.NS.PEP_USER_TUNE, options, event_cb, call_back);
     },
-    /**
+    /** Function: subscribe
      * Alias of pubsub.subscribe
      */
     subscribe: function(jid,service,node,options, event_cb, call_back)
