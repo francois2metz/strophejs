@@ -2,7 +2,7 @@
   Copyright 2009, François de Metz <francois@2metz.fr>
   Based on pubsub plugin Copyright 2008, Stanziq  Inc.
 */
-/** Class: pep
+/**
  * Implement Personnal Eventing Protocol
  * http://xmpp.org/extensions/xep-0163.html
  * Need pubsub plugin

@@ -1,7 +1,7 @@
 /*
   Copyright 2009, François de Metz <francois@2metz.fr>
 */
-/** Class: roster
+/**
  * Roster Plugin
  * Allow easily roster management
  *
