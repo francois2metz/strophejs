@@ -255,8 +255,16 @@ jackTest("roster should send presence unsubscribe on unsubscribe", function(mock
     expect(1);
 });
 
-jackTest("roster should send updated roster item on update", function(mockConnection) {
+test("update method should throw exception if not item found", function() {
+    try {
+        rosterPlugin.update("test@example.net", null, null, null);
+    } catch (e) {
+        ok(true, "exception ok");
+    }
+    expect(1);
+});
 
+jackTest("roster should send updated roster item on update", function(mockConnection) {
     jack.expect("mockConnection.sendIQ")
         .once()
         .mock(function(stanza) {
@@ -273,6 +281,48 @@ jackTest("roster should send updated roster item on update", function(mockConnec
                                    + 'subscription="both">'
                                    + '<group>Friends</group>'
                                 + '</item>'));
-             rosterPlugin.update('romeo@example.net', 'Example', ["Foo", "Bar"]);
+    rosterPlugin.update('romeo@example.net', 'Example', ["Foo", "Bar"]);
+    expect(1);
+});
+
+jackTest("roster update should not update groups if null value", function(mockConnection) {
+    jack.expect("mockConnection.sendIQ")
+        .once()
+        .mock(function(stanza) {
+                  equals(stanza.toString(), "<iq type='set' xmlns='jabber:client'><query xmlns='jabber:iq:roster'>"
+                                             + "<item jid='romeo@example.net' "
+                                                   + "name='Example' "
+                                                   + "subscription='both'>"
+                                                   + "<group>Friends</group>"
+                                             + "</item></query></iq>");
+              });
+    rosterPlugin.init(mockConnection);
+    rosterPlugin._updateItem($('<item jid="romeo@example.net" '
+                                   + 'name="Romeo" '
+                                   + 'subscription="both">'
+                                   + '<group>Friends</group>'
+                                + '</item>'));
+    rosterPlugin.update('romeo@example.net', 'Example', null);
+    expect(1);
+});
+
+jackTest("roster update should not update name if null value", function(mockConnection) {
+    jack.expect("mockConnection.sendIQ")
+        .once()
+        .mock(function(stanza) {
+                  console.log(stanza.toString());
+                  equals(stanza.toString(), "<iq type='set' xmlns='jabber:client'><query xmlns='jabber:iq:roster'>"
+                                             + "<item jid='romeo@example.net' "
+                                                   + "name='Romeo' "
+                                                   + "subscription='both'/>"
+                                             + "</query></iq>");
+              });
+    rosterPlugin.init(mockConnection);
+    rosterPlugin._updateItem($('<item jid="romeo@example.net" '
+                                   + 'name="Romeo" '
+                                   + 'subscription="both">'
+                                   + '<group>Friends</group>'
+                                + '</item>'));
+    rosterPlugin.update('romeo@example.net', null, [], null);
     expect(1);
 });
