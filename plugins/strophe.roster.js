@@ -75,8 +75,10 @@ Strophe.addConnectionPlugin('roster',
      */
     findItem : function(jid)
     {
-        for (var i = 0; i < this.items.length; i++) {
-            if (this.items[i].jid == jid) {
+        for (var i = 0; i < this.items.length; i++)
+        {
+            if (this.items[i].jid == jid)
+            {
                 return this.items[i];
             }
         }
@@ -134,8 +136,12 @@ Strophe.addConnectionPlugin('roster',
     update: function(jid, name, groups, call_back)
     {
         var item = this.findItem(jid);
-        var newName = name || name;
-        var newGroups = groups || item.group;
+        if (!item)
+        {
+            throw "item not found";
+        }
+        var newName = name || item.name;
+        var newGroups = groups || item.groups;
         var iq = $iq({type: 'set'}).c('query', {xmlns: Strophe.NS.ROSTER}).c('item', {jid: item.jid,
                                                                                       name: newName,
                                                                                       subscription: item.subscription});
@@ -152,7 +158,8 @@ Strophe.addConnectionPlugin('roster',
     {
         var self = this;
         this.querySelector(stanza).find('item').each(
-            function () {
+            function ()
+            {
                 var item = self.querySelector(this);
                 self._updateItem(item);
             }
@@ -177,13 +184,17 @@ Strophe.addConnectionPlugin('roster',
         var from = Strophe.getBareJidFromJid(jid);
         var item = this.findItem(from);
         // not in roster
-        if (!item) {
+        if (!item)
+        {
             return true;
         }
         var type = presence.attr('type');
-        if (type == 'unavailable') {
+        if (type == 'unavailable')
+        {
             delete item.resources[Strophe.getResourceFromJid(jid)];
-        } else {
+        }
+        else
+        {
             // TODO: add timestamp
             item.resources[Strophe.getResourceFromJid(jid)] = {
                 show     : presence.find('show:first').text(),
@@ -205,7 +216,8 @@ Strophe.addConnectionPlugin('roster',
         this._connection.send(iqresult);
         var self = this;
         var items = iq.find('item').each(
-            function () {
+            function ()
+            {
                 var item = self.querySelector(this);
                 self._updateItem(item);
             }
@@ -221,12 +233,16 @@ Strophe.addConnectionPlugin('roster',
         var jid           = aItem.attr("jid");
         var name          = aItem.attr("name");
         var subscription  = aItem.attr("subscription");
-        var groups        = aItem.find('group').map(function() {
-                                                          return querySelector(this).text();
-                                             });
+        var groups        = aItem.find('group').map(
+            function()
+            {
+                return querySelector(this).text();
+            }
+        );
 
         var item = this.findItem(jid);
-        if (!item) {
+        if (!item)
+        {
             this.items.push({
                 name         : name,
                 jid          : jid,
@@ -234,7 +250,9 @@ Strophe.addConnectionPlugin('roster',
                 groups       : groups,
                 resources    : {}
             });
-        } else {
+        }
+        else
+        {
             item.name = name;
             item.subscription = subscription;
             item.group = groups;
