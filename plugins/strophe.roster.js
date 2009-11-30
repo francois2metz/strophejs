@@ -1,12 +1,16 @@
 /*
   Copyright 2009, François de Metz <francois@2metz.fr>
 */
-/**
+/** Class: roster
  * Roster Plugin
- * Allow roster management easily
+ * Allow easily roster management
  *
- * Get roster from server, handle presence, handle roster iq
- * subscribe/unsubscribe, authorize/unauthorize presence subscription
+ *  Features
+ *  * Get roster from server
+ *  * handle presence
+ *  * handle roster iq
+ *  * subscribe/unsubscribe
+ *  *  authorize/unauthorize
  */
 Strophe.addConnectionPlugin('roster',
 {
@@ -17,7 +21,7 @@ Strophe.addConnectionPlugin('roster',
      * or other engines will work
      */
     querySelector : $,
-    /**
+    /** Property: items
      * Roster items
      * [
      *    {
@@ -36,8 +40,11 @@ Strophe.addConnectionPlugin('roster',
      * ]
      */
     items : [],
-    /**
+    /** Function: init
      * Plugin init
+     *
+     * Parameters:
+     *   (Strophe.Connection) conn - Strophe connection
      */
     init: function(conn)
     {
@@ -47,8 +54,9 @@ Strophe.addConnectionPlugin('roster',
         conn.addHandler(this._onReceivePresence.bind(this), null, 'presence', null, null, null);
         conn.addHandler(this._onReceiveIQ.bind(this), Strophe.NS.ROSTER, 'iq', "set", null, null);
     },
-    /**
-     * Get Roster
+    /**  Function: get
+     * Get Roster on server
+     *
      * Parameters:
      *     (Function) userCallback
      */
@@ -59,8 +67,9 @@ Strophe.addConnectionPlugin('roster',
                                 this._onReceiveRosterSuccess.bind(this).prependArg(userCallback),
                                 this._onReceiveRosterError.bind(this).prependArg(userCallback));
     },
-    /**
+    /** Function: findItem
      * Find item by JID
+     *
      * Parameters:
      *     (String) jid
      */
@@ -73,8 +82,9 @@ Strophe.addConnectionPlugin('roster',
         }
         return false;
     },
-    /**
+    /** Function: subscribe
      * Subscribe presence
+     *
      * Parameters:
      *     (String) jid
      */
@@ -82,8 +92,9 @@ Strophe.addConnectionPlugin('roster',
     {
         this._connection.send($pres({to: jid, type: "subscribe"}));
     },
-    /**
+    /** Function: unsubscribe
      * Unsubscribe presence
+     *
      * Parameters:
      *     (String) jid
      */
@@ -91,8 +102,9 @@ Strophe.addConnectionPlugin('roster',
     {
         this._connection.send($pres({to: jid, type: "unsubscribe"}));
     },
-    /**
+    /** Function: authorize
      * Authorize presence subscription
+     *
      * Parameters:
      *     (String) jid
      */
@@ -100,8 +112,9 @@ Strophe.addConnectionPlugin('roster',
     {
         this._connection.send($pres({to: jid, type: "subscribed"}));
     },
-    /**
+    /** Function: unauthorize
      * Unauthorize presence subscription
+     *
      * Parameters:
      *     (String) jid
      */
@@ -109,13 +122,14 @@ Strophe.addConnectionPlugin('roster',
     {
         this._connection.send($pres({to: jid, type: "unsubscribed"}));
     },
-    /**
+    /** Function: update
      * Update roster item
+     *
      * Parameters:
-     *     (String) jid
-     *     (String) name
-     *     (Array) groups
-     *     (Function) call_back
+     *   (String) jid - item jid
+     *   (String) name - name
+     *   (Array) groups
+     *   (Function) call_back
      */
     update: function(jid, name, groups, call_back)
     {
@@ -131,7 +145,9 @@ Strophe.addConnectionPlugin('roster',
         }
         this._connection.sendIQ(iq, call_back, call_back);
     },
-
+    /** PrivateFunction: _onReceiveRosterSuccess
+     *
+     */
     _onReceiveRosterSuccess: function(userCallback, stanza)
     {
         var self = this;
@@ -143,12 +159,14 @@ Strophe.addConnectionPlugin('roster',
         );
         userCallback(this.items);
     },
-
+    /** PrivateFunction: _onReceiveRosterError
+     *
+     */
     _onReceiveRosterError: function(userCallback, stanza)
     {
         userCallback(this.items);
     },
-    /**
+    /** PrivateFunction: _onReceivePresence
      * Handle presence
      */
     _onReceivePresence : function(stanza)
@@ -175,7 +193,7 @@ Strophe.addConnectionPlugin('roster',
         }
         return true;
     },
-    /**
+    /** PrivateFunction: _onReceiveIQ
      *
      */
     _onReceiveIQ : function(stanza)
@@ -194,7 +212,7 @@ Strophe.addConnectionPlugin('roster',
         );
         return true;
     },
-    /**
+    /** PrivateFunction: _updateItem
      * Update internal representation of roster item
      */
     _updateItem : function(aItem)
