@@ -10,17 +10,18 @@
  *  * handle presence
  *  * handle roster iq
  *  * subscribe/unsubscribe
- *  *  authorize/unauthorize
+ *  * authorize/unauthorize
  */
 Strophe.addConnectionPlugin('roster',
 {
     _connection: null,
+
+    _callbacks : [],
     /**
      * Reference to a query Selector engine
-     * Currently we used jQuery maybe Prototype
-     * or other engines will work
+     * Currently we are using jQuery
      */
-    querySelector : $,
+    querySelector : jQuery,
     /** Property: items
      * Roster items
      * [
@@ -42,6 +43,7 @@ Strophe.addConnectionPlugin('roster',
     items : [],
     /** Function: init
      * Plugin init
+     * Need jQuery
      *
      * Parameters:
      *   (Strophe.Connection) conn - Strophe connection
@@ -54,11 +56,11 @@ Strophe.addConnectionPlugin('roster',
         conn.addHandler(this._onReceivePresence.bind(this), null, 'presence', null, null, null);
         conn.addHandler(this._onReceiveIQ.bind(this), Strophe.NS.ROSTER, 'iq', "set", null, null);
     },
-    /**  Function: get
+    /** Function: get
      * Get Roster on server
      *
      * Parameters:
-     *     (Function) userCallback
+     *   (Function) userCallback
      */
     get: function(userCallback)
     {
@@ -66,6 +68,16 @@ Strophe.addConnectionPlugin('roster',
         this._connection.sendIQ(iq,
                                 this._onReceiveRosterSuccess.bind(this).prependArg(userCallback),
                                 this._onReceiveRosterError.bind(this).prependArg(userCallback));
+    },
+    /** Function: registerCallback
+     * register callback on roster (presence and iq)
+     *
+     * Parameters:
+     *   (Function) call_back
+     */
+    registerCallback: function(call_back)
+    {
+        this._callbacks.push(call_back);
     },
     /** Function: findItem
      * Find item by JID
@@ -202,6 +214,13 @@ Strophe.addConnectionPlugin('roster',
                 priority : presence.find('priority:first').text()
             };
         }
+        var self = this;
+        this._callbacks.forEach(
+            function(call_back)
+            {
+                call_back(self.items, item);
+            }
+        );
         return true;
     },
     /** PrivateFunction: _onReceiveIQ
@@ -220,6 +239,12 @@ Strophe.addConnectionPlugin('roster',
             {
                 var item = self.querySelector(this);
                 self._updateItem(item);
+            }
+        );
+        this._callbacks.forEach(
+            function(call_back)
+            {
+                call_back(self.items);
             }
         );
         return true;
