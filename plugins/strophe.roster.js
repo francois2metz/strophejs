@@ -11,6 +11,7 @@
  *  * handle roster iq
  *  * subscribe/unsubscribe
  *  * authorize/unauthorize
+ *  * roster versioning (xep 237)
  */
 Strophe.addConnectionPlugin('roster',
 {
@@ -41,6 +42,11 @@ Strophe.addConnectionPlugin('roster',
      * ]
      */
     items : [],
+    /** Property: ver
+     * current roster revision
+     * always null if server doesn't support xep 237
+     */
+    ver : null,
     /** Function: init
      * Plugin init
      * Need jQuery
@@ -55,16 +61,39 @@ Strophe.addConnectionPlugin('roster',
         // Presence subscription
         conn.addHandler(this._onReceivePresence.bind(this), null, 'presence', null, null, null);
         conn.addHandler(this._onReceiveIQ.bind(this), Strophe.NS.ROSTER, 'iq', "set", null, null);
+
+        Strophe.addNamespace('ROSTER_VER', 'urn:xmpp:features:rosterver');
+    },
+    /** Function: supportVersioning
+     * return true if roster versioning is enabled on server
+     */
+    supportVersioning: function()
+    {
+        return (this.querySelector(this._connection.features).find("ver[xmlns='"+ Strophe.NS.ROSTER_VER +"']").size() > 0);
     },
     /** Function: get
      * Get Roster on server
      *
      * Parameters:
-     *   (Function) userCallback
+     *   (Function) userCallback - callback on roster result
+     *   (String) ver - current rev of roster
+     *      (only used if roster versioning is enabled)
+     *   (Array) items - initial items of ver
+     *      (only used if roster versioning is enabled)
+     *     In browser context you can use sessionStorage
+     *     to store your roster in json (JSON.stringify())
      */
-    get: function(userCallback)
+    get: function(userCallback, ver, items)
     {
-        var iq = $iq({type: 'get', id:'roster_1'}).c('query', {xmlns: Strophe.NS.ROSTER});
+        var attrs = {xmlns: Strophe.NS.ROSTER};
+        this.items = [];
+        if (this.supportVersioning())
+        {
+            // empty rev because i want an rev attribute in the result
+            attrs.ver = ver || '';
+            this.items = items || [];
+        }
+        var iq = $iq({type: 'get', id:'roster_1'}).c('query', attrs);
         this._connection.sendIQ(iq,
                                 this._onReceiveRosterSuccess.bind(this).prependArg(userCallback),
                                 this._onReceiveRosterError.bind(this).prependArg(userCallback));
@@ -169,6 +198,7 @@ Strophe.addConnectionPlugin('roster',
     _onReceiveRosterSuccess: function(userCallback, stanza)
     {
         var self = this;
+        this.ver = this.querySelector(stanza).find('query').eq(0).attr('ver');
         this.querySelector(stanza).find('item').each(
             function ()
             {

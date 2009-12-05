@@ -51,10 +51,12 @@ jackTest("roster.get() should callback with empty array",
                      }
                  );
              rosterPlugin.init(mockConnection);
-             rosterPlugin.get(function(items) {
-                                  called++;
-                                  equals(items.length, 0, "items must be empty");
-                              });
+             rosterPlugin.get(
+                 function(items) {
+                     called++;
+                     equals(items.length, 0, "items must be empty");
+                 }
+             );
              equals(called, 1, "roster.get() callback should be called");
          }
         );
@@ -89,6 +91,7 @@ jackTest("roster.get() should callback with roster items",
              rosterPlugin.get(
                  function(items) {
                      called++;
+                     equals(null, rosterPlugin.ver);
                      equals(items.length, 3, "3 items");
                      equals(Strophe._connectionPlugins["roster"].items.length, 3, "3 items");
                      equals(items[0].name, "Romeo");
@@ -99,6 +102,84 @@ jackTest("roster.get() should callback with roster items",
              equals(called, 1, "roster.get() callback should be called");
          }
         );
+
+function getFeatures(rosterver)
+{
+    return "<stream:features xmlns:stream='http://etherx.jabber.org/streams'><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'/><session xmlns='urn:ietf:params:xml:ns:xmpp-session'/>" + (rosterver ? "<ver xmlns='urn:xmpp:features:rosterver'><optional/></ver>" : "") +"</stream:features>";
+}
+
+jackTest("roster plugin say if roster versioning is enabled",
+        function(mockConnection) {
+            mockConnection.features = getFeatures(true);
+            rosterPlugin.init(mockConnection);
+            equals(true, rosterPlugin.supportVersioning(), "roster versioning should be enabled");
+        });
+
+jackTest("roster plugin say if roster versioning is not enabled",
+        function(mockConnection) {
+            mockConnection.features = getFeatures(false);
+            rosterPlugin.init(mockConnection);
+            equals(false, rosterPlugin.supportVersioning(), "roster versioning should be enabled");
+        });
+
+jackTest("roster.get() send ver if server support versioning",
+         function (mockConnection) {
+             var called = 0;
+             jack.expect("mockConnection.sendIQ")
+                 .mock(
+                     function(iq, callbacksuccess, callbackerror) {
+                         equals(1, $(iq.tree()).find("query[ver='']").size(), 'iq query should have a ver attribute');
+                         callbacksuccess('<iq type="result" />');
+                     }
+                 );
+             mockConnection.features = getFeatures(true);
+             rosterPlugin.init(mockConnection);
+             rosterPlugin.get(
+                 function(items) {
+                     called++;
+                     equals(0, items.length);
+                 });
+             equals(called, 1, "roster.get() callback should be called");
+         });
+
+jackTest("roster.get() send specified ver if server support versioning",
+         function (mockConnection) {
+             var called = 0;
+             jack.expect("mockConnection.sendIQ")
+                 .mock(
+                     function(iq, callbacksuccess, callbackerror) {
+                         equals(1, $(iq.tree()).find("query[ver='ver1']").size(), 'iq query should have a ver attribute');
+                         callbacksuccess('<iq type="result" />');
+                     }
+                 );
+             mockConnection.features = getFeatures(true);
+             rosterPlugin.init(mockConnection);
+             rosterPlugin.get(
+                 function(items) {
+                     called++;
+                     equals(1, items.length);
+                 }, 'ver1', [{jid:'romeo@example.net'}]);
+             equals(called, 1, "roster.get() callback should be called");
+         });
+
+jackTest("roster.get() accept ver and item arg and server return entire roster",
+         function (mockConnection) {
+             var called = 0;
+             jack.expect("mockConnection.sendIQ")
+                 .mock(
+                     function(iq, callbacksuccess, callbackerror) {
+                         callbacksuccess('<iq type="result"><query ver="ver2"><item jid="romeo@example.net"/></query></iq>');
+                     }
+                 );
+             rosterPlugin.init(mockConnection);
+             rosterPlugin.get(
+                 function(items) {
+                     called++;
+                     equals(1, items.length);
+                     equals('ver2', rosterPlugin.ver);
+                 }, 'ver1', []);
+             equals(called, 1, "roster.get() callback should be called");
+         });
 
 jackTest("roster should addHandler on presence and iq roster on init",
          function (mockConnection) {
