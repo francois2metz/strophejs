@@ -1,6 +1,6 @@
 /*
   Copyright 2009, François de Metz <francois@2metz.fr>
-  Based on pubsub plugin Copyright 2008, Stanziq  Inc.
+  Based on pubsub plugin: Copyright 2008, Stanziq  Inc.
 */
 /**
  * Implement Personnal Eventing Protocol
@@ -63,15 +63,14 @@ Strophe.addConnectionPlugin('pep',
         this.publish(this._connection.jid, Strophe.NS.PEP_USER_TUNE, "tune", data, call_back);
     },
     /** Function: publish
-
-     Publish and item to the given pep node.
-
-     Parameters:
-       (String) jid - The node owner's jid.
-       (String) node -  The name of the pubsub node.
-       (Array) items -  The list of items to be published.
-       (Function) call_back - Used to determine if node
-       creation was sucessful.
+     * Publish and item to the given pep node.
+     *
+     * Parameters:
+     *   (String) jid - The node owner's jid.
+     *   (String) node -  The name of the pubsub node.
+     *   (Array) items -  The list of items to be published.
+     *   (Function) call_back - Used to determine if node
+     *     creation was sucessful.
      */
     publish: function(jid, node, name, items, call_back)
     {
@@ -105,11 +104,9 @@ Strophe.addConnectionPlugin('pep',
                                     pubid,
                                     null);
         this._connection.send(pub.tree());
-        console.log(pub.toString());
 
         return pubid;
     },
-
     /** Function: subscribeToUserLocation
      * Subscribe to user location
      *
@@ -138,7 +135,7 @@ Strophe.addConnectionPlugin('pep',
     {
         return this.subscribe(this.connection.jid, to, Strophe.NS.PEP_USER_MOOD, options, event_cb, call_back);
     },
-    /** Function subscribeToUserTune
+    /** Function: subscribeToUserTune
      * Subscribe to user tune
      *
      * Parameters:
@@ -159,5 +156,4 @@ Strophe.addConnectionPlugin('pep',
     {
         this._connection.pubsub.subscribe(jid,service,node,options, event_cb, call_back);
     }
-
 });
