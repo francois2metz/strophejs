@@ -2783,6 +2783,9 @@ Strophe.Connection.prototype = {
      */
     _sasl_auth1_cb: function (elem)
     {
+        // store features for futur use
+        this.features = elem;
+
         var i, child;
 
         for (i = 0; i < elem.childNodes.length; i++) {
