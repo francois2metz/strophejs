@@ -263,6 +263,7 @@ Strophe.addConnectionPlugin('roster',
         var from = iq.attr('from');
         var iqresult = $iq({type: 'result', id: id, to: from});
         this._connection.send(iqresult);
+        this.ver = iq.find('query').eq(0).attr('ver');
         var self = this;
         var items = iq.find('item').each(
             function ()
