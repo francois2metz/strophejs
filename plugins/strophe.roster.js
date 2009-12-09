@@ -93,7 +93,7 @@ Strophe.addConnectionPlugin('roster',
             attrs.ver = ver || '';
             this.items = items || [];
         }
-        var iq = $iq({type: 'get', id:'roster_1'}).c('query', attrs);
+        var iq = $iq({type: 'get',  'id' : this._connection.getUniqueId('roster')}).c('query', attrs);
         this._connection.sendIQ(iq,
                                 this._onReceiveRosterSuccess.bind(this).prependArg(userCallback),
                                 this._onReceiveRosterError.bind(this).prependArg(userCallback));
