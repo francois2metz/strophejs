@@ -197,15 +197,7 @@ Strophe.addConnectionPlugin('roster',
      */
     _onReceiveRosterSuccess: function(userCallback, stanza)
     {
-        var self = this;
-        this.ver = this.querySelector(stanza).find('query').eq(0).attr('ver');
-        this.querySelector(stanza).find('item').each(
-            function ()
-            {
-                var item = self.querySelector(this);
-                self._updateItem(item);
-            }
-        );
+        this._updateItems(this.querySelector(stanza));
         userCallback(this.items);
     },
     /** PrivateFunction: _onReceiveRosterError
@@ -263,9 +255,17 @@ Strophe.addConnectionPlugin('roster',
         var from = iq.attr('from');
         var iqresult = $iq({type: 'result', id: id, to: from});
         this._connection.send(iqresult);
-        this.ver = iq.find('query').eq(0).attr('ver');
+        this._updateItems(iq);
+        return true;
+    },
+    /** PrivateFunction: _updateItems
+     * Update items from iq
+     */
+    _updateItems : function(iq)
+    {
         var self = this;
-        var items = iq.find('item').each(
+        this.ver = iq.find('query').eq(0).attr('ver');
+        iq.find('item').each(
             function ()
             {
                 var item = self.querySelector(this);
@@ -278,7 +278,6 @@ Strophe.addConnectionPlugin('roster',
                 call_back(self.items);
             }
         );
-        return true;
     },
     /** PrivateFunction: _updateItem
      * Update internal representation of roster item
@@ -289,12 +288,12 @@ Strophe.addConnectionPlugin('roster',
         var jid           = aItem.attr("jid");
         var name          = aItem.attr("name");
         var subscription  = aItem.attr("subscription");
-        var groups        = aItem.find('group').map(
+        var groups        = querySelector.makeArray(aItem.find('group').map(
             function()
             {
                 return querySelector(this).text();
             }
-        );
+        ));
 
         var item = this.findItem(jid);
         if (!item)

@@ -17,7 +17,7 @@ module("plugins.Roster", {
            setup: function() {
                rosterPlugin.items = [];
                rosterPlugin.ver = null;
-               rosterPlugin._callback = null;
+               rosterPlugin._callbacks = [];
            },
            teardown: function() {
 
@@ -241,6 +241,7 @@ jackTest("roster should be filled when received iq and send reply ",
 jackTest("roster should be updated when received iq and update callback called",
          function(mockConnection) {
              var callbackIq = null;
+             var called = 0;
              jack.expect("mockConnection.addHandler")
                  .exactly("2 time").mock(
                      function(callback, ns, type) {
@@ -261,6 +262,7 @@ jackTest("roster should be updated when received iq and update callback called",
              rosterPlugin.init(mockConnection);
              rosterPlugin.registerCallback(
                  function(items) {
+                     called++;
                      equals(1, items.length);
                  });
              rosterPlugin.get(function() {});
@@ -269,10 +271,10 @@ jackTest("roster should be updated when received iq and update callback called",
                            + 'name="Romeo" '
                            + 'subscription="both">'
                            + '<group>Friends</group>'
-                           + '</item></query></iq>'), "handler should return true");
-             equals(rosterPlugin.items.length, 1);
+                           + '</item></query></iq>'), "handler should return true"); equals(rosterPlugin.items.length, 1);
              equals("both", rosterPlugin.items[0].subscription);
-             expect(4);
+             equals(called, 2);
+             expect(6);
          }
         );
 
