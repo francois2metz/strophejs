@@ -12,11 +12,20 @@ function object2Array(object) {
     }
     return a;
 }
+var rosterPlugin = Strophe._connectionPlugins["roster"];
+module("plugins.Roster", {
+           setup: function() {
+               rosterPlugin.items = [];
+               rosterPlugin.ver = null;
+               rosterPlugin._callback = null;
+           },
+           teardown: function() {
 
-module("plugins.Roster");
+           }
+});
 
 // shortcut access
-var rosterPlugin = Strophe._connectionPlugins["roster"];
+
 // Qunit test with jack for mocking facility
 function jackTest(name, fun) {
     test(name,
@@ -38,8 +47,7 @@ jackTest("roster.get() should send IQ",
                  .once();
              rosterPlugin.init(mockConnection);
              rosterPlugin.get("callback");
-         }
-        );
+         });
 
 jackTest("roster.get() should callback with empty array",
          function (mockConnection) {
@@ -58,8 +66,7 @@ jackTest("roster.get() should callback with empty array",
                  }
              );
              equals(called, 1, "roster.get() callback should be called");
-         }
-        );
+         });
 /**
  *  Test stanza came from RFC 3921 XMPP-IM
  */
@@ -100,8 +107,7 @@ jackTest("roster.get() should callback with roster items",
                      equals(items[0].groups.length, 1);
                  });
              equals(called, 1, "roster.get() callback should be called");
-         }
-        );
+         });
 
 function getFeatures(rosterver)
 {
@@ -181,6 +187,27 @@ jackTest("roster.get() accept ver and item arg and server return entire roster",
              equals(called, 1, "roster.get() callback should be called");
          });
 
+jackTest("onroster push, roster ver should be updated",
+         function (mockConnection) {
+             jack.expect("mockConnection.addHandler")
+                 .exactly("2 time").mock(function(callback, ns, type) {
+                                             if (type == "iq") {
+                                                 ok(callback('<iq type="set"><query xmlns="jabber:iq:roster" ver="ver4">'
+                                                             + '<item jid="romeo@example.net"'
+                                                             + 'name="Romeo" '
+                                                             + 'subscription="both">'
+                                                             + '<group>Friends</group>'
+                                                             + '</item></query></iq>'),"handler should return true");
+                                             }
+                                         });
+             jack.expect("mockConnection.send")
+                 .once();
+             rosterPlugin.init(mockConnection);
+             equals(rosterPlugin.items.length, 1);
+             equals(rosterPlugin.ver, "ver4");
+         });
+
+
 jackTest("roster should addHandler on presence and iq roster on init",
          function (mockConnection) {
              jack.expect("mockConnection.addHandler")
@@ -190,8 +217,7 @@ jackTest("roster should addHandler on presence and iq roster on init",
                  .whereArgument(4).is(null)
                  .whereArgument(5).is(null);
              rosterPlugin.init(mockConnection);
-         }
-        );
+         });
 
 jackTest("roster should be filled when received iq and send reply ",
          function(mockConnection) {
@@ -443,5 +469,3 @@ jackTest("roster update should not update name if null value",
              rosterPlugin.update('romeo@example.net', null, [], null);
              expect(1);
          });
-
-
