@@ -111,7 +111,7 @@ Strophe.addConnectionPlugin('pubsub', {
 	    (String) jid - The node owner's jid.
 	    (String) service - The name of the pubsub service.
 	    (String) node -  The name of the pubsub node.
-	    (Dictionary) options -  The configuration options for the  node.
+	    (Array) options -  The configuration options for the  node.
 	    (Function) event_cb - Used to recieve subscription events.
 	    (Function) call_back - Used to determine if node
 	    creation was sucessful.
@@ -134,14 +134,15 @@ Strophe.addConnectionPlugin('pubsub', {
 	    form_field.appendChild(value);
 	    x.appendChild(form_field);
 
-	    for (var i in options)
-	    {
-		var val = options[i];
-		x.appendChild(val);
-	    }
 	    var sub = $iq({from:jid, to:service, type:'set', id:subid});
-	    if(options && options.length != 0)
+
+	    if(options && options.length && options.length !== 0)
 	    {
+	        for (var i = 0; i < options.length; i++)
+	        {
+		    var val = options[i];
+		    x.appendChild(val);
+	        }
 		sub_options.appendChild(x);
 
 		sub.c('pubsub', { xmlns:Strophe.NS.PUBSUB }).c('subscribe',
@@ -189,7 +190,7 @@ Strophe.addConnectionPlugin('pubsub', {
 	    var subid = this._connection.getUniqueId("unsubscribenode");
 
 
-	    var sub = $iq({from:jid, to:service, type:'set', id:subid})
+	    var sub = $iq({from:jid, to:service, type:'set', id:subid});
 	    sub.c('pubsub', { xmlns:Strophe.NS.PUBSUB }).c('unsubscribe',
 		{node:node,jid:jid});
 
@@ -238,7 +239,7 @@ Strophe.addConnectionPlugin('pubsub', {
 		publish_elem.appendChild(item);
 	    }
 
-	    var pub = $iq({from:jid, to:service, type:'set', id:pubid})
+	    var pub = $iq({from:jid, to:service, type:'set', id:pubid});
 	    pub.c('pubsub', { xmlns:Strophe.NS.PUBSUB }).cnode(publish_elem);
 
 
