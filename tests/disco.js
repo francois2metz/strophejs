@@ -16,6 +16,8 @@ test("add identity",
 test("add feature",
      function() {
          ok(discoPlugin.addFeature("jabber:iq:version"));
+         ok(discoPlugin.addFeature("jabber:iq:time"));
+         equals(false, discoPlugin.addFeature("jabber:iq:time"));
      }
     );
 
@@ -34,7 +36,7 @@ function jackTest(name, fun) {
 }
 
 jackTest('Test iq get info features', function(mockConnection) {
-    expect(7);
+    expect(9);
     jack.expect("mockConnection.send").once().mock(
                      function(iq) {
                          equals($(iq).attr('to'), 'romeo@montague.net/orchard');
@@ -44,18 +46,38 @@ jackTest('Test iq get info features', function(mockConnection) {
                          equals($(iq).find('query > identity[name="Neutron"]').size(), 2);
                          equals($(iq).find('query > identity[name="Neutron"]:first').attr('xml:lang'), undefined);
                          equals($(iq).find('query > identity[name="Neutron"]:last').attr('xml:lang'), 'fr-FR');
+                         equals($(iq).find('query > feature').size(), 2);
+                         equals($(iq).find('query > feature[var="jabber:iq:version"]').size(), 1);
                      });
     discoPlugin.init(mockConnection);
     discoPlugin.addIdentity('client', 'web');
     discoPlugin.addIdentity('automation', 'bot', 'Neutron');
     discoPlugin.addIdentity('automation', 'bot', 'Neutron', 'fr-FR');
+    discoPlugin.addFeature('jabber:iq:version');
+    discoPlugin.addFeature('jabber:iq:time');
     var parser = new DOMParser();
     var xml = parser.parseFromString("<iq type='get' from='romeo@montague.net/orchard' id='info1'> <query xmlns='http://jabber.org/protocol/disco#info'/></iq>", "text/xml");
     discoPlugin._onDiscoInfo(xml.documentElement);
 });
 
-jackTest("query info", function(mockConnection) {
-             expect(1);
+jackTest('Test iq get info features with node attribute', function(mockConnection) {
+    expect(5);
+    jack.expect("mockConnection.send").once().mock(
+                     function(iq) {
+                         equals($(iq).attr('to'), 'romeo@montague.net/orchard');
+                         equals($(iq).attr('id'), 'info1');
+                         equals($(iq).find('query').attr('node'), 'http://jabber.org/protocol/commands');
+                         equals($(iq).find('query > identity').size(), 3);
+                         equals($(iq).find('query > feature').size(), 2);
+                     });
     discoPlugin.init(mockConnection);
-    discoPlugin.info("example.net");
+    discoPlugin.addIdentity('client', 'web');
+    discoPlugin.addIdentity('automation', 'bot', 'Neutron');
+    discoPlugin.addIdentity('automation', 'bot', 'Neutron', 'fr-FR');
+    discoPlugin.addFeature('jabber:iq:version');
+    discoPlugin.addFeature('jabber:iq:time');
+
+    var parser = new DOMParser();
+    var xml = parser.parseFromString("<iq type='get' from='romeo@montague.net/orchard' id='info1'><query xmlns='http://jabber.org/protocol/disco#info' node='http://jabber.org/protocol/commands'/></iq>", "text/xml");
+    discoPlugin._onDiscoInfo(xml.documentElement);
 });
