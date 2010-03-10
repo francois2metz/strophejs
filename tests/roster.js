@@ -12,6 +12,21 @@ function object2Array(object) {
     }
     return a;
 }
+
+function toDom(string)
+{
+    if (window.DOMParser)
+    {
+        var parser = new DOMParser();
+        return parser.parseFromString(string, "text/xml");
+    }
+    else // Internet Explorer
+    {
+        var parser = new ActiveXObject("Microsoft.XMLDOM");
+        parser.async="false";
+        return parser.loadXML(string);
+    }
+}
 var rosterPlugin = Strophe._connectionPlugins["roster"];
 module("plugins.Roster", {
            setup: function() {
@@ -55,7 +70,7 @@ jackTest("roster.get() should callback with empty array",
              jack.expect("mockConnection.sendIQ")
                  .once().mock(
                      function(iq, callbacksuccess, callbackerror) {
-                         callbacksuccess('<iq type="result"><query xmlns="jabber:iq:roster" /></iq>');
+                         callbacksuccess(toDom('<iq type="result"><query xmlns="jabber:iq:roster" /></iq>'));
                      }
                  );
              rosterPlugin.init(mockConnection);
@@ -76,7 +91,7 @@ jackTest("roster.get() should callback with roster items",
              jack.expect("mockConnection.sendIQ")
                  .once().mock(
                      function(iq, callbacksuccess, callbackerror) {
-                         callbacksuccess('<iq type="result"><query xmlns="jabber:iq:roster">'
+                         callbacksuccess(toDom('<iq type="result"><query xmlns="jabber:iq:roster">'
                                          + '<item jid="romeo@example.net" '
                                          + 'name="Romeo" '
                                          + 'subscription="both">'
@@ -84,14 +99,14 @@ jackTest("roster.get() should callback with roster items",
                                          + '</item>'
                                          + '<item jid="mercutio@example.org" '
                                          + 'name="Mercutio" '
-                                         + 'subscription="from"><'
-                                         + 'group>Friends</group>'
+                                         + 'subscription="from">'
+                                         + '<group>Friends</group>'
                                          + '</item>'
-                                         + '<item jid="benvolio@example.org"'
-                                         + 'name="Benvolio"'
+                                         + '<item jid="benvolio@example.org" '
+                                         + 'name="Benvolio" '
                                          + 'subscription="both">'
                                          + '<group>Friends</group>'
-                                         + '</item></query></iq>');
+                                         + '</item></query></iq>'));
                      }
                  );
              rosterPlugin.init(mockConnection);
@@ -135,7 +150,7 @@ jackTest("roster.get() send ver if server support versioning",
                  .mock(
                      function(iq, callbacksuccess, callbackerror) {
                          equals(1, $(iq.tree()).find("query[ver='']").size(), 'iq query should have a ver attribute');
-                         callbacksuccess('<iq type="result" />');
+                         callbacksuccess(toDom('<iq type="result" />'));
                      }
                  );
              mockConnection.features = getFeatures(true);
@@ -155,7 +170,7 @@ jackTest("roster.get() send specified ver if server support versioning",
                  .mock(
                      function(iq, callbacksuccess, callbackerror) {
                          equals(1, $(iq.tree()).find("query[ver='ver1']").size(), 'iq query should have a ver attribute');
-                         callbacksuccess('<iq type="result" />');
+                         callbacksuccess(toDom('<iq type="result" />'));
                      }
                  );
              mockConnection.features = getFeatures(true);
@@ -174,7 +189,7 @@ jackTest("roster.get() accept ver and item arg and server return entire roster",
              jack.expect("mockConnection.sendIQ")
                  .mock(
                      function(iq, callbacksuccess, callbackerror) {
-                         callbacksuccess('<iq type="result"><query ver="ver2"><item jid="romeo@example.net"/></query></iq>');
+                         callbacksuccess(toDom('<iq type="result"><query ver="ver2"><item jid="romeo@example.net"/></query></iq>'));
                      }
                  );
              rosterPlugin.init(mockConnection);
@@ -189,20 +204,22 @@ jackTest("roster.get() accept ver and item arg and server return entire roster",
 
 jackTest("onroster push, roster ver should be updated",
          function (mockConnection) {
+             expect(3);
              jack.expect("mockConnection.addHandler")
                  .exactly("2 time").mock(function(callback, ns, type) {
                                              if (type == "iq") {
-                                                 ok(callback('<iq type="set"><query xmlns="jabber:iq:roster" ver="ver4">'
-                                                             + '<item jid="romeo@example.net"'
+                                                 ok(callback(toDom('<iq type="set"><query xmlns="jabber:iq:roster" ver="ver4">'
+                                                             + '<item jid="romeo@example.net" '
                                                              + 'name="Romeo" '
                                                              + 'subscription="both">'
                                                              + '<group>Friends</group>'
-                                                             + '</item></query></iq>'),"handler should return true");
+                                                             + '</item></query></iq>'),"handler should return true"));
                                              }
                                          });
              jack.expect("mockConnection.send")
                  .once();
              rosterPlugin.init(mockConnection);
+
              equals(rosterPlugin.items.length, 1);
              equals(rosterPlugin.ver, "ver4");
          });
@@ -224,12 +241,12 @@ jackTest("roster should be filled when received iq and send reply ",
              jack.expect("mockConnection.addHandler")
                  .exactly("2 time").mock(function(callback, ns, type) {
                                              if (type == "iq") {
-                                                 ok(callback('<iq type="set"><query xmlns="jabber:iq:roster">'
+                                                 ok(callback(toDom('<iq type="set"><query xmlns="jabber:iq:roster">'
                                                              + '<item jid="romeo@example.net" '
                                                              + 'name="Romeo" '
                                                              + 'subscription="both">'
                                                              + '<group>Friends</group>'
-                                                             + '</item></query></iq>'),"handler should return true");
+                                                             + '</item></query></iq>'),"handler should return true"));
                                              }
                                          });
              jack.expect("mockConnection.send")
@@ -252,12 +269,12 @@ jackTest("roster should be updated when received iq and update callback called",
              jack.expect("mockConnection.sendIQ")
                  .once().mock(
                      function(iq, callbacksuccess, callbackerror) {
-                         callbacksuccess('<iq type="result"><query xmlns="jabber:iq:roster">'
+                         callbacksuccess(toDom('<iq type="result"><query xmlns="jabber:iq:roster">'
                                          + '<item jid="romeo@example.net" '
                                          + 'name="Romeo" '
                                          + 'subscription="from">'
                                          + '<group>Friends</group>'
-                                         + '</item></query></iq>');
+                                         + '</item></query></iq>'));
                      });
              rosterPlugin.init(mockConnection);
              rosterPlugin.registerCallback(
@@ -266,12 +283,12 @@ jackTest("roster should be updated when received iq and update callback called",
                      equals(1, items.length);
                  });
              rosterPlugin.get(function() {});
-             ok(callbackIq('<iq type="set"><query xmlns="jabber:iq:roster">'
+             ok(callbackIq(toDom('<iq type="set"><query xmlns="jabber:iq:roster">'
                            + '<item jid="romeo@example.net" '
                            + 'name="Romeo" '
                            + 'subscription="both">'
                            + '<group>Friends</group>'
-                           + '</item></query></iq>'), "handler should return true"); equals(rosterPlugin.items.length, 1);
+                           + '</item></query></iq>')), "handler should return true"); equals(rosterPlugin.items.length, 1);
              equals("both", rosterPlugin.items[0].subscription);
              equals(called, 2);
              expect(6);
@@ -292,12 +309,12 @@ jackTest("roster should be handle presence of roster contact and update callback
                  .once()
                  .mock(
                      function(iq, callbacksuccess, callbackerror) {
-                         callbacksuccess('<iq type="result"><query xmlns="jabber:iq:roster">'
+                         callbacksuccess(toDom('<iq type="result"><query xmlns="jabber:iq:roster">'
                                          + '<item jid="romeo@example.net" '
                                          + 'name="Romeo" '
                                          + 'subscription="from">'
                                          + '<group>Friends</group>'
-                                         + '</item></query></iq>');
+                                         + '</item></query></iq>'));
                      });
              rosterPlugin.init(mockConnection);
              rosterPlugin.get(function() {});
@@ -309,11 +326,11 @@ jackTest("roster should be handle presence of roster contact and update callback
                      equals(items[0], item);
                  });
              same(rosterPlugin.items[0].resources, {});
-             ok(callbackPresence('<presence from="romeo@example.net/test"><show>xa</show><status>Test</status><priority>42</priority></presence>'), "handler should return true");
+             ok(callbackPresence(toDom('<presence from="romeo@example.net/test"><show>xa</show><status>Test</status><priority>42</priority></presence>')), "handler should return true");
              equals(rosterPlugin.items[0].resources['test'].show, "xa");
              equals(rosterPlugin.items[0].resources['test'].status, "Test");
              equals(rosterPlugin.items[0].resources['test'].priority, 42);
-             ok(callbackPresence('<presence from="romeo@example.net/orchard" />'), "handler should return true");
+             ok(callbackPresence(toDom('<presence from="romeo@example.net/orchard" />')), "handler should return true");
              equals(rosterPlugin.items[0].resources['orchard'].show, "");
              equals(rosterPlugin.items[0].resources['orchard'].status, "");
              equals(rosterPlugin.items[0].resources['orchard'].priority, "");
@@ -333,19 +350,19 @@ jackTest("roster should be handle presence unavailable",
              jack.expect("mockConnection.sendIQ")
                  .exactly("1 time").mock(
                      function(iq, callbacksuccess, callbackerror) {
-                         callbacksuccess('<iq type="result"><query xmlns="jabber:iq:roster">'
+                         callbacksuccess(toDom('<iq type="result"><query xmlns="jabber:iq:roster">'
                                          + '<item jid="romeo@example.net" '
                                          + 'name="Romeo" '
                                          + 'subscription="from">'
                                          + '<group>Friends</group>'
-                                         + '</item></query></iq>');
+                                         + '</item></query></iq>'));
                      });
              rosterPlugin.init(mockConnection);
              rosterPlugin.get(function() {});
              same({}, rosterPlugin.items[0].resources);
-             ok(callbackPresence('<presence from="romeo@example.net/orchard"><show>xa</show><status>Test</status><priority>42</priority></presence>'), "handler should return true");
+             ok(callbackPresence(toDom('<presence from="romeo@example.net/orchard"><show>xa</show><status>Test</status><priority>42</priority></presence>')), "handler should return true");
              equals(rosterPlugin.items[0].resources['orchard'].show, "xa");
-             ok(callbackPresence('<presence from="romeo@example.net/orchard" type="unavailable" />'), "handler should return true");
+             ok(callbackPresence(toDom('<presence from="romeo@example.net/orchard" type="unavailable" />')), "handler should return true");
              equals(rosterPlugin.items[0].resources['orchard'], null, "should be deleted");
          });
 
