@@ -212,7 +212,7 @@ Strophe.addConnectionPlugin('roster',
      */
     _onReceivePresence : function(stanza)
     {
-        var presence = this.querySelector(stanza);
+        var presence = this.querySelector(stanza).find('presence');
         // TODO: from is optional
         var jid = presence.attr('from');
         var from = Strophe.getBareJidFromJid(jid);
@@ -236,14 +236,18 @@ Strophe.addConnectionPlugin('roster',
                 priority : presence.find('priority:first').text()
             };
         }
-        var self = this;
-        this._callbacks.forEach(
-            function(call_back)
-            {
-                call_back(self.items, item);
-            }
-        );
+        this._call_backs(this.items, item);
         return true;
+    },
+    /** PrivateFunction: _call_backs
+     *
+     */
+    _call_backs : function(items, item)
+    {
+        for (var i = 0; i < this._callbacks.length; i++) // [].forEach my love ...
+        {
+            this._callbacks[i](items, item);
+        }
     },
     /** PrivateFunction: _onReceiveIQ
      *
@@ -272,12 +276,7 @@ Strophe.addConnectionPlugin('roster',
                 self._updateItem(item);
             }
         );
-        this._callbacks.forEach(
-            function(call_back)
-            {
-                call_back(self.items);
-            }
-        );
+        this._call_backs(this.items);
     },
     /** PrivateFunction: _updateItem
      * Update internal representation of roster item
