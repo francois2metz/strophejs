@@ -23,6 +23,7 @@ Strophe.addConnectionPlugin('disco',
     {
 	this._connection = conn;
         this._identities = [];
+        this._features = [];
         // disco info
         conn.addHandler(this._onDiscoInfo.bind(this), Strophe.NS.DISCO_INFO, 'iq', 'get', null, null);
         // disco items
@@ -64,6 +65,11 @@ Strophe.addConnectionPlugin('disco',
      */
     addFeature: function(var_name)
     {
+        for (var i=0; i<this._features.length; i++)
+        {
+             if (this._features[i] == var_name)
+                 return false;
+        }
         this._features.push(var_name);
         return true;
     },
@@ -85,8 +91,9 @@ Strophe.addConnectionPlugin('disco',
      * Parameters:
      *   (Function) call_back
      *   (String) jid
+     *   (String) node
      */
-    info: function(call_back, jid)
+    info: function(call_back, jid, node)
     {
         var disco = $iq({from : this._connection.jid,
 	                 to   : jid,
@@ -121,7 +128,7 @@ Strophe.addConnectionPlugin('disco',
     {
         var id   =  stanza.getAttribute('id');
         var from = stanza.getAttribute('from');
-        var iqresult = $iq({type: 'result', id: id, to: from}).c('query', {xmlns : Strophe.NS.DISCO_INFO});
+        var iqresult = $iq({type: 'result', id: id, to: from}).c('query', {xmlns : Strophe.NS.DISCO_INFO, node: stanza.getElementsByTagNameNS(Strophe.NS.DISCO_INFO, 'query')[0].getAttribute('node')});
         for (var i=0; i<this._identities.length; i++)
         {
             var attrs = {category: this._identities[i].category,
@@ -131,6 +138,10 @@ Strophe.addConnectionPlugin('disco',
             if (this._identities[i].lang)
                 attrs['xml:lang'] = this._identities[i].lang;
             iqresult.c('identity', attrs).up();
+        }
+        for (var i=0; i<this._features.length; i++)
+        {
+            iqresult.c('feature', {'var':this._features[i]}).up();
         }
         this._connection.send(iqresult.tree());
     },
