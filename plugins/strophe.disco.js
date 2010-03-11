@@ -5,7 +5,7 @@
 /**
  * Disco Strophe Plugin
  * Implement http://xmpp.org/extensions/xep-0030.html
- * TODO: manage node hierarchies
+ * TODO: manage node hierarchies, and node on info request
  */
 Strophe.addConnectionPlugin('disco',
 {
@@ -168,9 +168,11 @@ Strophe.addConnectionPlugin('disco',
     {
         var id   = stanza.getAttribute('id');
         var from = stanza.getAttribute('from');
+        var query_attrs = {xmlns: Strophe.NS.DISCO_ITEMS};
         var node = stanza.getElementsByTagNameNS(Strophe.NS.DISCO_ITEMS, 'query')[0].getAttribute('node');
         if (node)
         {
+            query_attrs.node = node;
             var items = null;
             for (var i = 0; i < this._items.length; i++)
             {
@@ -185,7 +187,7 @@ Strophe.addConnectionPlugin('disco',
         {
             var items = this._items;
         }
-        var iqresult = $iq({type: 'result', id: id, to: from}).c('query', {xmlns: Strophe.NS.DISCO_ITEMS});
+        var iqresult = $iq({type: 'result', id: id, to: from}).c('query', query_attrs);
         for (var i = 0; i < items.length; i++)
         {
             var attrs = {jid:  items[i].jid};
@@ -197,5 +199,4 @@ Strophe.addConnectionPlugin('disco',
         }
         this._connection.send(iqresult.tree());
     }
-
 });
