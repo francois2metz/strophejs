@@ -36,7 +36,7 @@ Strophe.addConnectionPlugin('disco',
     /** Function: addIdentity
      * See http://xmpp.org/registrar/disco-categories.html
      * Parameters:
-     *   (String) category - category of identity like (client, automation, etc ...)
+     *   (String) category - category of identity (like client, automation, etc ...)
      *   (String) type - type of identity (like pc, web, bot , etc ...)
      *   (String) name - name of identity in natural language
      *   (String) lang - lang of name parameter
@@ -62,7 +62,7 @@ Strophe.addConnectionPlugin('disco',
     /** Function: addFeature
      *
      * Parameters:
-     *   (String) var_name
+     *   (String) var_name - feature name (like jabber:iq:version)
      *
      * Returns:
      *   boolean
@@ -161,7 +161,9 @@ Strophe.addConnectionPlugin('disco',
         }
         this._connection.send(iqresult.tree());
     },
-
+    /** PrivateFunction: _onDiscoItems
+     * Called when receive items request
+     */
     _onDiscoItems: function(stanza)
     {
         var id   = stanza.getAttribute('id');
