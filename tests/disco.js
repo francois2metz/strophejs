@@ -87,11 +87,18 @@ jackTest('Test iq get info features with node attribute', function(mockConnectio
     discoPlugin._onDiscoInfo(xml.documentElement);
 });
 
-jackTest('Test get info features with node attribute', function(mockConnection) {
-             jack.expect("mockConnection.sendIQ").once().mock();
+jackTest('Test get info features', function(mockConnection) {
+             jack.expect("mockConnection.sendIQ").once();
     discoPlugin.init(mockConnection);
     discoPlugin.info(function() {}, 'test@example.com');
          });
+
+jackTest('Test get items', function(mockConnection) {
+             jack.expect("mockConnection.sendIQ").once();
+    discoPlugin.init(mockConnection);
+    discoPlugin.items(function() {}, 'test@example.com');
+         });
+
 
 jackTest('Test iq get items', function(mockConnection) {
     expect(8);
@@ -116,7 +123,7 @@ jackTest('Test iq get items', function(mockConnection) {
 
 
 
-jackTest('Test iq get items with node request 2', function(mockConnection) {
+jackTest('Test iq get items with node request', function(mockConnection) {
     expect(5);
     jack.expect("mockConnection.send").once().mock(
                      function(iq) {
@@ -135,3 +142,4 @@ jackTest('Test iq get items with node request 2', function(mockConnection) {
     var xml = toDom("<iq type='get' from='romeo@montague.net/orchard' id='items1'><query xmlns='http://jabber.org/protocol/disco#items' node='music'/></iq>", "text/xml");
     discoPlugin._onDiscoItems(xml.documentElement);
          });
+
