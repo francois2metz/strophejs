@@ -29,20 +29,6 @@ test("add item",
         ok(discoPlugin.addItem('plays.shakespeare.lit', 'Play-Specific Chatrooms', 'chat', function() {}));
     });
 
-function jackTest(name, fun) {
-    test(name,
-         function() {
-             jack(
-                 function() {
-                     var mockConnection = jack.create("mockConnection", object2Array(Strophe.Connection));
-                     fun(mockConnection);
-                 }
-
-             );
-         }
-        );
-}
-
 jackTest('Test iq get info features', function(mockConnection) {
     expect(9);
     jack.expect("mockConnection.send").once().mock(
