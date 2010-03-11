@@ -101,9 +101,10 @@ jackTest('Test get items', function(mockConnection) {
 
 
 jackTest('Test iq get items', function(mockConnection) {
-    expect(8);
+    expect(9);
     jack.expect("mockConnection.send").once().mock(
                      function(iq) {
+                         equals($(iq).find('query').attr('node'), undefined);
                          equals($(iq).attr('to'), 'romeo@montague.net/orchard');
                          equals($(iq).attr('id'), 'items1');
                          equals($(iq).find('query > item').size(), 3);
@@ -124,9 +125,10 @@ jackTest('Test iq get items', function(mockConnection) {
 
 
 jackTest('Test iq get items with node request', function(mockConnection) {
-    expect(5);
+    expect(6);
     jack.expect("mockConnection.send").once().mock(
                      function(iq) {
+                         equals($(iq).find('query').attr('node'), 'music');
                          equals($(iq).attr('to'), 'romeo@montague.net/orchard');
                          equals($(iq).attr('id'), 'items1');
                          equals($(iq).find('query > item').size(), 1);
