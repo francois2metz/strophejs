@@ -105,11 +105,20 @@ Strophe.Field.prototype = {
 /**
  * Data Forms strophe plugin
  * http://xmpp.org/extensions/xep-0004.html
+ * TODO : implement http://xmpp.org/extensions/xep-0221.html
  */
 Strophe.addConnectionPlugin('dataforms',
 {
-    init : function() {},
-
+    init : function()
+    {
+        Strophe.addNamespace('DATA', 'jabber:x:data');
+    },
+    /** Function: parse
+     * Parse form
+     * Parameters:
+     *   (DOMElement) form
+     *
+     */
     parse: function(form)
     {
         return {
