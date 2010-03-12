@@ -34,6 +34,15 @@ test("parse another form", function() {
          equal("Test Form", form.title);
      });
 
+test("parse instructions", function() {
+         var form = getForm("result", "Test Form");
+         var instructions = document.createElement("instructions");
+         instructions.textContent = 'Fill out this form to configure your new bot!';
+         form.appendChild(instructions);
+         var dataform = dataformsPlugin.parse(form);
+         equal("Fill out this form to configure your new bot!", dataform.instructions);
+     });
+
 test("parse fields", function() {
          var form = getForm("result");
          var field = document.createElement("field");

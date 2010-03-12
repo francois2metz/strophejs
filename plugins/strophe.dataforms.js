@@ -130,20 +130,33 @@ Strophe.addConnectionPlugin('dataforms',
             // TODO: multiple title
             title : this._getTitle(form),
             // TODO: multiple instructions
-            intructions : [],
+            instructions : this._getInstructions(form),
             fields : this._parseFields(form)
         };
     },
 
-    _getTitle: function(form) {
+    _getTitle: function(form)
+    {
         var title = form.getElementsByTagName("title");
-        if (title.length > 0) {
+        if (title.length > 0)
+        {
             return title.item(0).textContent;
         }
         return null;
     },
 
-    _parseFields: function(form) {
+    _getInstructions: function(form)
+    {
+        var instructions = form.getElementsByTagName("instructions");
+        if (instructions.length > 0)
+        {
+            return instructions.item(0).textContent;
+        }
+        return null;
+    },
+
+    _parseFields: function(form)
+    {
         var fields = form.getElementsByTagName("field");
         var f = [];
         for (var i = 0; i < fields.length; i++) {
