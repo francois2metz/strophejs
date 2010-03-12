@@ -109,9 +109,13 @@ Strophe.Field.prototype = {
  */
 Strophe.addConnectionPlugin('dataforms',
 {
-    init : function()
+    init : function(conn)
     {
         Strophe.addNamespace('DATA', 'jabber:x:data');
+        if (conn.disco)
+        {
+            conn.disco.addFeature(Strophe.NS.DATA);
+        }
     },
     /** Function: parse
      * Parse form
