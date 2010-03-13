@@ -50,7 +50,7 @@ jackTest('Test iq get info features', function(mockConnection) {
     discoPlugin.addFeature('jabber:iq:version');
     discoPlugin.addFeature('jabber:iq:time');
     var xml = toDom("<iq type='get' from='romeo@montague.net/orchard' id='info1'> <query xmlns='http://jabber.org/protocol/disco#info'/></iq>", "text/xml");
-    discoPlugin._onDiscoInfo(xml.documentElement);
+    discoPlugin._onDiscoInfo(xml);
 });
 
 jackTest('Test iq get info features with node attribute', function(mockConnection) {
@@ -70,7 +70,7 @@ jackTest('Test iq get info features with node attribute', function(mockConnectio
     discoPlugin.addFeature('jabber:iq:version');
     discoPlugin.addFeature('jabber:iq:time');
     var xml = toDom("<iq type='get' from='romeo@montague.net/orchard' id='info1'><query xmlns='http://jabber.org/protocol/disco#info' node='http://jabber.org/protocol/commands'/></iq>", "text/xml");
-    discoPlugin._onDiscoInfo(xml.documentElement);
+    discoPlugin._onDiscoInfo(xml);
 });
 
 jackTest('Test get info features', function(mockConnection) {
@@ -105,7 +105,7 @@ jackTest('Test iq get items', function(mockConnection) {
     discoPlugin.addItem('play.shakespeare.lit');
              discoPlugin.addItem('catalog.shakespeare.lit', 'Music', 'music', function() {});
     var xml = toDom("<iq type='get' from='romeo@montague.net/orchard' id='items1'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>", "text/xml");
-    discoPlugin._onDiscoItems(xml.documentElement);
+    discoPlugin._onDiscoItems(xml);
          });
 
 
@@ -128,6 +128,6 @@ jackTest('Test iq get items with node request', function(mockConnection) {
                             return [{jid: 'catalog.shakespeare.lit', name:'Chuck'}];
                                  });
     var xml = toDom("<iq type='get' from='romeo@montague.net/orchard' id='items1'><query xmlns='http://jabber.org/protocol/disco#items' node='music'/></iq>", "text/xml");
-    discoPlugin._onDiscoItems(xml.documentElement);
+    discoPlugin._onDiscoItems(xml);
          });
 
