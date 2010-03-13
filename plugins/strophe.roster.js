@@ -18,11 +18,6 @@ Strophe.addConnectionPlugin('roster',
     _connection: null,
 
     _callbacks : [],
-    /**
-     * Reference to a query Selector engine
-     * Currently we are using jQuery
-     */
-    querySelector : jQuery,
     /** Property: items
      * Roster items
      * [
@@ -49,7 +44,6 @@ Strophe.addConnectionPlugin('roster',
     ver : null,
     /** Function: init
      * Plugin init
-     * Need jQuery
      *
      * Parameters:
      *   (Strophe.Connection) conn - Strophe connection
@@ -69,7 +63,7 @@ Strophe.addConnectionPlugin('roster',
      */
     supportVersioning: function()
     {
-        return (this.querySelector(this._connection.features).find("ver[xmlns='"+ Strophe.NS.ROSTER_VER +"']").size() > 0);
+        return (this._connection.features && this._connection.features.getElementsByTagName('ver').length > 0);
     },
     /** Function: get
      * Get Roster on server
@@ -197,7 +191,7 @@ Strophe.addConnectionPlugin('roster',
      */
     _onReceiveRosterSuccess: function(userCallback, stanza)
     {
-        this._updateItems(this.querySelector(stanza));
+        this._updateItems(stanza);
         userCallback(this.items);
     },
     /** PrivateFunction: _onReceiveRosterError
@@ -210,11 +204,10 @@ Strophe.addConnectionPlugin('roster',
     /** PrivateFunction: _onReceivePresence
      * Handle presence
      */
-    _onReceivePresence : function(stanza)
+    _onReceivePresence : function(presence)
     {
-        var presence = this.querySelector(stanza).find('presence');
         // TODO: from is optional
-        var jid = presence.attr('from');
+        var jid = presence.getAttribute('from');
         var from = Strophe.getBareJidFromJid(jid);
         var item = this.findItem(from);
         // not in roster
@@ -222,7 +215,7 @@ Strophe.addConnectionPlugin('roster',
         {
             return true;
         }
-        var type = presence.attr('type');
+        var type = presence.getAttribute('type');
         if (type == 'unavailable')
         {
             delete item.resources[Strophe.getResourceFromJid(jid)];
@@ -231,9 +224,9 @@ Strophe.addConnectionPlugin('roster',
         {
             // TODO: add timestamp
             item.resources[Strophe.getResourceFromJid(jid)] = {
-                show     : presence.find('show:first').text(),
-                status   : presence.find('status:first').text(),
-                priority : presence.find('priority:first').text()
+                show     : (presence.getElementsByTagName('show').length != 0) ? presence.getElementsByTagName('show')[0].textContent : "",
+                status   : (presence.getElementsByTagName('status').length != 0) ? presence.getElementsByTagName('status')[0].textContent : "",
+                priority : (presence.getElementsByTagName('priority').length != 0) ? presence.getElementsByTagName('priority')[0].textContent : ""
             };
         }
         this._call_backs(this.items, item);
@@ -252,11 +245,10 @@ Strophe.addConnectionPlugin('roster',
     /** PrivateFunction: _onReceiveIQ
      *
      */
-    _onReceiveIQ : function(stanza)
+    _onReceiveIQ : function(iq)
     {
-        var iq = this.querySelector(stanza);
-        var id = iq.attr('id');
-        var from = iq.attr('from');
+        var id = iq.id;
+        var from = iq.from;
         var iqresult = $iq({type: 'result', id: id, to: from});
         this._connection.send(iqresult);
         this._updateItems(iq);
@@ -267,32 +259,35 @@ Strophe.addConnectionPlugin('roster',
      */
     _updateItems : function(iq)
     {
-        var self = this;
-        this.ver = iq.find('query').eq(0).attr('ver');
-        iq.find('item').each(
-            function ()
-            {
-                var item = self.querySelector(this);
-                self._updateItem(item);
-            }
-        );
+        var query = iq.getElementsByTagName('query');
+        if (query.length != 0)
+        {
+            this.ver = query.item(0).getAttribute('ver');
+            var self = this;
+            Strophe.forEachChild(query.item(0), 'item',
+                function (item)
+                {
+                    self._updateItem(item);
+                }
+           );
+        }
         this._call_backs(this.items);
     },
     /** PrivateFunction: _updateItem
      * Update internal representation of roster item
      */
-    _updateItem : function(aItem)
+    _updateItem : function(item)
     {
-        var querySelector = this.querySelector;
-        var jid           = aItem.attr("jid");
-        var name          = aItem.attr("name");
-        var subscription  = aItem.attr("subscription");
-        var groups        = querySelector.makeArray(aItem.find('group').map(
-            function()
+        var jid           = item.getAttribute("jid");
+        var name          = item.getAttribute("name");
+        var subscription  = item.getAttribute("subscription");
+        var groups        = [];
+        Strophe.forEachChild(item, 'group',
+            function(group)
             {
-                return querySelector(this).text();
+                groups.push(group.textContent);
             }
-        ));
+        );
 
         var item = this.findItem(jid);
         if (!item)

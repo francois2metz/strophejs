@@ -18,13 +18,14 @@ function toDom(string)
     if (window.DOMParser)
     {
         var parser = new DOMParser();
-        return parser.parseFromString(string, "text/xml");
+        return parser.parseFromString(string, "text/xml").documentElement;
     }
     else // Internet Explorer
     {
         var parser = new ActiveXObject("Microsoft.XMLDOM");
-        parser.async="false";
-        return parser.loadXML(string);
+        parser.async = "false";
+        parser.loadXML(string);
+        return parser.documentElement;
     }
 }
 var rosterPlugin = Strophe._connectionPlugins["roster"];
@@ -126,7 +127,7 @@ jackTest("roster.get() should callback with roster items",
 
 function getFeatures(rosterver)
 {
-    return "<stream:features xmlns:stream='http://etherx.jabber.org/streams'><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'/><session xmlns='urn:ietf:params:xml:ns:xmpp-session'/>" + (rosterver ? "<ver xmlns='urn:xmpp:features:rosterver'><optional/></ver>" : "") +"</stream:features>";
+    return toDom("<stream:features xmlns:stream='http://etherx.jabber.org/streams'><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'/><session xmlns='urn:ietf:params:xml:ns:xmpp-session'/>" + (rosterver ? "<ver xmlns='urn:xmpp:features:rosterver'><optional/></ver>" : "") +"</stream:features>");
 }
 
 jackTest("roster plugin say if roster versioning is enabled",
@@ -189,20 +190,21 @@ jackTest("roster.get() accept ver and item arg and server return entire roster",
              jack.expect("mockConnection.sendIQ")
                  .mock(
                      function(iq, callbacksuccess, callbackerror) {
-                         callbacksuccess(toDom('<iq type="result"><query ver="ver2"><item jid="romeo@example.net"/></query></iq>'));
+                         callbacksuccess(toDom('<iq type="result"><query ver="ver2" xmlns="jabber:iq:roster"><item jid="romeo@example.net"/></query></iq>'));
                      }
                  );
+             mockConnection.features = getFeatures(true);
              rosterPlugin.init(mockConnection);
              rosterPlugin.get(
                  function(items) {
                      called++;
-                     equals(1, items.length);
-                     equals('ver2', rosterPlugin.ver);
+                     equals(items.length, 1);
+                     equals(rosterPlugin.ver, 'ver2');
                  }, 'ver1', []);
              equals(called, 1, "roster.get() callback should be called");
          });
 
-jackTest("onroster push, roster ver should be updated",
+jackTest("on roster push, roster ver should be updated",
          function (mockConnection) {
              expect(3);
              jack.expect("mockConnection.addHandler")
@@ -213,7 +215,7 @@ jackTest("onroster push, roster ver should be updated",
                                                              + 'name="Romeo" '
                                                              + 'subscription="both">'
                                                              + '<group>Friends</group>'
-                                                             + '</item></query></iq>'),"handler should return true"));
+                                                             + '</item></query></iq>'), "handler should return true"));
                                              }
                                          });
              jack.expect("mockConnection.send")
@@ -437,7 +439,7 @@ jackTest("roster should send updated roster item on update",
                                   + "</item></query></iq>");
                        });
              rosterPlugin.init(mockConnection);
-             rosterPlugin._updateItem($('<item jid="romeo@example.net" '
+             rosterPlugin._updateItem(toDom('<item jid="romeo@example.net" '
                                         + 'name="Romeo" '
                                         + 'subscription="both">'
                                         + '<group>Friends</group>'
@@ -459,7 +461,7 @@ jackTest("roster update should not update groups if null value",
                                   + "</item></query></iq>");
                        });
              rosterPlugin.init(mockConnection);
-             rosterPlugin._updateItem($('<item jid="romeo@example.net" '
+             rosterPlugin._updateItem(toDom('<item jid="romeo@example.net" '
                                         + 'name="Romeo" '
                                         + 'subscription="both">'
                                         + '<group>Friends</group>'
@@ -480,7 +482,7 @@ jackTest("roster update should not update name if null value",
                                   + "</query></iq>");
                        });
              rosterPlugin.init(mockConnection);
-             rosterPlugin._updateItem($('<item jid="romeo@example.net" '
+             rosterPlugin._updateItem(toDom('<item jid="romeo@example.net" '
                                         + 'name="Romeo" '
                                         + 'subscription="both">'
                                         + '<group>Friends</group>'

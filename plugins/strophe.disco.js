@@ -144,7 +144,7 @@ Strophe.addConnectionPlugin('disco',
         var id   =  stanza.getAttribute('id');
         var from = stanza.getAttribute('from');
         var iqresult = $iq({type: 'result', id: id, to: from}).c('query', {xmlns: Strophe.NS.DISCO_INFO,
-                                                                           node: stanza.getElementsByTagNameNS(Strophe.NS.DISCO_INFO, 'query')[0].getAttribute('node')});
+                                                                           node: stanza.getElementsByTagName('query')[0].getAttribute('node')});
         for (var i=0; i<this._identities.length; i++)
         {
             var attrs = {category: this._identities[i].category,
@@ -169,7 +169,7 @@ Strophe.addConnectionPlugin('disco',
         var id   = stanza.getAttribute('id');
         var from = stanza.getAttribute('from');
         var query_attrs = {xmlns: Strophe.NS.DISCO_ITEMS};
-        var node = stanza.getElementsByTagNameNS(Strophe.NS.DISCO_ITEMS, 'query')[0].getAttribute('node');
+        var node = stanza.getElementsByTagName('query')[0].getAttribute('node');
         if (node)
         {
             query_attrs.node = node;
