@@ -33,7 +33,11 @@ Strophe.Field = function(field) {
      * @type Array
      */
     this.values = [];
+
+    this.media = null;
+
     this._fillValues(field);
+    this._parseMedia(field);
     /**
      * @type Array
      */
@@ -59,30 +63,66 @@ Strophe.Field.prototype = {
         return null;
     },
 
-    _fillValues: function(field) {
+    _fillValues: function(field)
+    {
         var values = field.getElementsByTagName("value");
-        if (values.length > 1) {
+        if (values.length > 1)
+        {
             var authorized = ["list-multi", "jid-multi",
                               "text-multi", "hidden"];
-            if (authorized.indexOf(this.type) == -1) {
-                throw "bad";
+            if (authorized.indexOf(this.type) == -1)
+            {
+                throw "cannot have multiple value";
             }
-            for (var i = 0; i < values.length; i++) {
+            for (var i = 0; i < values.length; i++)
+            {
                 this.values.push(values.item(i).textContent);
             }
-        } else if (values.length == 1) {
+        }
+        else if (values.length == 1)
+        {
             this.value = values.item(0).textContent;
         }
     },
 
-    _parseOptions: function(field) {
+    _parseMedia: function(field)
+    {
+        var media = field.getElementsByTagNameNS(Strophe.NS.DATA_MEDIA, 'media');
+        if (media.length == 1)
+        {
+            this.media = {
+                height : media.item(0).getAttribute('height'),
+                width  : media.item(0).getAttribute('width'),
+                uri    : []
+            };
+            var uris = media.item(0).getElementsByTagName('uri');
+            for (var i = 0; i < uris.length; i++)
+            {
+                if (!uris.item(i).hasAttribute('type'))
+                {
+                    throw "uri element must have an type attribute";
+                }
+                if (uris.item(i).textContent == "")
+                {
+                    throw "uri element must have a value";
+                }
+                this.media.uri.push({
+                                        type  : uris.item(i).getAttribute('type'),
+                                        value : uris.item(i).textContent
+                                    });
+            }
+        }
+    },
+
+    _parseOptions: function(field)
+    {
         var options = field.getElementsByTagName("option");
         if (options.length == 0) {
             return [];
         }
         var authorized = ["list-single", "list-multi"];
         if (authorized.indexOf(this.type) == -1) {
-            throw "bad";
+            throw "cannot have option";
         }
         var o = [];
         for (var i = 0; i < options.length; i++) {
@@ -96,7 +136,7 @@ Strophe.Field.prototype = {
     _getValue : function(node) {
         var value = node.getElementsByTagName("value");
         if (value.length > 1 || value.length == 0) {
-            throw "bad";
+            throw "must have only one value";
         }
         return value.item(0).textContent;
     }
@@ -104,14 +144,15 @@ Strophe.Field.prototype = {
 
 /**
  * Data Forms strophe plugin
- * http://xmpp.org/extensions/xep-0004.html
- * TODO : implement http://xmpp.org/extensions/xep-0221.html
+ * http://xmpp.org/extensions/xep-0004.html Data Forms
+ * http://xmpp.org/extensions/xep-0221.html Data Forms Media Element
  */
 Strophe.addConnectionPlugin('dataforms',
 {
     init : function(conn)
     {
         Strophe.addNamespace('DATA', 'jabber:x:data');
+        Strophe.addNamespace('DATA_MEDIA', 'urn:xmpp:media-element');
         if (conn.disco)
         {
             conn.disco.addFeature(Strophe.NS.DATA);
@@ -119,6 +160,9 @@ Strophe.addConnectionPlugin('dataforms',
     },
     /** Function: parse
      * Parse form
+     * TODO: multiple title
+     * TODO: multiple instructions
+     * TODO: reported and item element
      * Parameters:
      *   (DOMElement) form
      *
@@ -127,9 +171,7 @@ Strophe.addConnectionPlugin('dataforms',
     {
         return {
             type : form.getAttribute("type"),
-            // TODO: multiple title
             title : this._getTitle(form),
-            // TODO: multiple instructions
             instructions : this._getInstructions(form),
             fields : this._parseFields(form)
         };
