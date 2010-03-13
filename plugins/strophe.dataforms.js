@@ -146,6 +146,8 @@ Strophe.Field.prototype = {
  * Data Forms strophe plugin
  * http://xmpp.org/extensions/xep-0004.html Data Forms
  * http://xmpp.org/extensions/xep-0221.html Data Forms Media Element
+ * TODO: implement http://xmpp.org/extensions/xep-0122.html Data Forms Validation
+ * TODO: implement http://xmpp.org/extensions/xep-0141.html Data Forms Layout
  */
 Strophe.addConnectionPlugin('dataforms',
 {
