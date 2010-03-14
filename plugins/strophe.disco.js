@@ -143,8 +143,13 @@ Strophe.addConnectionPlugin('disco',
     {
         var id   =  stanza.getAttribute('id');
         var from = stanza.getAttribute('from');
-        var iqresult = $iq({type: 'result', id: id, to: from}).c('query', {xmlns: Strophe.NS.DISCO_INFO,
-                                                                           node: stanza.getElementsByTagName('query')[0].getAttribute('node')});
+        var node = stanza.getElementsByTagName('query')[0].getAttribute('node');
+        var attrs = {xmlns: Strophe.NS.DISCO_INFO};
+        if (node)
+        {
+            attrs.node = node;
+        }
+        var iqresult = $iq({type: 'result', id: id, to: from}).c('query', attrs);
         for (var i=0; i<this._identities.length; i++)
         {
             var attrs = {category: this._identities[i].category,
