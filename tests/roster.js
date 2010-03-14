@@ -121,6 +121,7 @@ jackTest("roster.get() should callback with roster items",
                      equals(items[0].jid, "romeo@example.net");
                      equals(items[0].subscription, "both");
                      equals(items[0].groups.length, 1);
+                     equals(items[0].groups[0], 'Friends');
                  });
              equals(called, 1, "roster.get() callback should be called");
          });
