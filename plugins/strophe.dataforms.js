@@ -151,6 +151,12 @@ Strophe.Field.prototype = {
  */
 Strophe.addConnectionPlugin('dataforms',
 {
+    /** Function: init
+     * Plugin init
+     *
+     * Parameters:
+     *   (Strophe.Connection) conn - Strophe connection
+     */
     init : function(conn)
     {
         Strophe.addNamespace('DATA', 'jabber:x:data');
