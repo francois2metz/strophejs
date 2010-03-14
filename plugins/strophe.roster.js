@@ -224,9 +224,9 @@ Strophe.addConnectionPlugin('roster',
         {
             // TODO: add timestamp
             item.resources[Strophe.getResourceFromJid(jid)] = {
-                show     : (presence.getElementsByTagName('show').length != 0) ? presence.getElementsByTagName('show')[0].textContent : "",
-                status   : (presence.getElementsByTagName('status').length != 0) ? presence.getElementsByTagName('status')[0].textContent : "",
-                priority : (presence.getElementsByTagName('priority').length != 0) ? presence.getElementsByTagName('priority')[0].textContent : ""
+                show     : (presence.getElementsByTagName('show').length != 0) ? Strophe.getText(presence.getElementsByTagName('show')[0]) : "",
+                status   : (presence.getElementsByTagName('status').length != 0) ? Strophe.getText(presence.getElementsByTagName('status')[0]) : "",
+                priority : (presence.getElementsByTagName('priority').length != 0) ? Strophe.getText(presence.getElementsByTagName('priority')[0]) : ""
             };
         }
         this._call_backs(this.items, item);
@@ -285,7 +285,7 @@ Strophe.addConnectionPlugin('roster',
         Strophe.forEachChild(item, 'group',
             function(group)
             {
-                groups.push(group.textContent);
+                groups.push(Strophe.getText(group));
             }
         );
 
