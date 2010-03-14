@@ -30,11 +30,12 @@ test("add item",
     });
 
 jackTest('Test iq get info features', function(mockConnection) {
-    expect(9);
+    expect(10);
     jack.expect("mockConnection.send").once().mock(
                      function(iq) {
                          equals($(iq).attr('to'), 'romeo@montague.net/orchard');
                          equals($(iq).attr('id'), 'info1');
+                         equals($(iq).find('query').attr('node'), undefined);
                          equals($(iq).find('query > identity').size(), 3);
                          equals($(iq).find('query > identity:first').attr('name'), undefined);
                          equals($(iq).find('query > identity[name="Neutron"]').size(), 2);
@@ -49,7 +50,7 @@ jackTest('Test iq get info features', function(mockConnection) {
     discoPlugin.addIdentity('automation', 'bot', 'Neutron', 'fr-FR');
     discoPlugin.addFeature('jabber:iq:version');
     discoPlugin.addFeature('jabber:iq:time');
-    var xml = toDom("<iq type='get' from='romeo@montague.net/orchard' id='info1'> <query xmlns='http://jabber.org/protocol/disco#info'/></iq>", "text/xml");
+    var xml = toDom("<iq type='get' from='romeo@montague.net/orchard' id='info1'><query xmlns='http://jabber.org/protocol/disco#info'/></iq>");
     discoPlugin._onDiscoInfo(xml);
 });
 
@@ -69,7 +70,7 @@ jackTest('Test iq get info features with node attribute', function(mockConnectio
     discoPlugin.addIdentity('automation', 'bot', 'Neutron', 'fr-FR');
     discoPlugin.addFeature('jabber:iq:version');
     discoPlugin.addFeature('jabber:iq:time');
-    var xml = toDom("<iq type='get' from='romeo@montague.net/orchard' id='info1'><query xmlns='http://jabber.org/protocol/disco#info' node='http://jabber.org/protocol/commands'/></iq>", "text/xml");
+    var xml = toDom("<iq type='get' from='romeo@montague.net/orchard' id='info1'><query xmlns='http://jabber.org/protocol/disco#info' node='http://jabber.org/protocol/commands'/></iq>");
     discoPlugin._onDiscoInfo(xml);
 });
 
@@ -104,7 +105,7 @@ jackTest('Test iq get items', function(mockConnection) {
     discoPlugin.addItem('catalog.shakespeare.lit', 'Books');
     discoPlugin.addItem('play.shakespeare.lit');
              discoPlugin.addItem('catalog.shakespeare.lit', 'Music', 'music', function() {});
-    var xml = toDom("<iq type='get' from='romeo@montague.net/orchard' id='items1'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>", "text/xml");
+    var xml = toDom("<iq type='get' from='romeo@montague.net/orchard' id='items1'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>");
     discoPlugin._onDiscoItems(xml);
          });
 
@@ -127,7 +128,7 @@ jackTest('Test iq get items with node request', function(mockConnection) {
     discoPlugin.addItem('catalog.shakespeare.lit', 'Music', 'music', function(stanza) {
                             return [{jid: 'catalog.shakespeare.lit', name:'Chuck'}];
                                  });
-    var xml = toDom("<iq type='get' from='romeo@montague.net/orchard' id='items1'><query xmlns='http://jabber.org/protocol/disco#items' node='music'/></iq>", "text/xml");
+    var xml = toDom("<iq type='get' from='romeo@montague.net/orchard' id='items1'><query xmlns='http://jabber.org/protocol/disco#items' node='music'/></iq>");
     discoPlugin._onDiscoItems(xml);
          });
 
