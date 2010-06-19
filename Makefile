@@ -13,6 +13,7 @@ STROPHE = strophe.js
 STROPHE_MIN = strophe.min.js
 
 PLUGIN_FILES = $(shell ls $(PLUGIN_DIR)/strophe.*.js | grep -v min)
+
 PLUGIN_FILES_MIN = $(PLUGIN_FILES:.js=.min.js)
 
 DIST_FILES = LICENSE.txt README.txt contrib examples plugins tests doc \
