@@ -50,7 +50,7 @@ Strophe.addConnectionPlugin('roster',
      */
     init: function(conn)
     {
-	this._connection = conn;
+        this._connection = conn;
         this.items = [];
         // Presence subscription
         conn.addHandler(this._onReceivePresence.bind(this), null, 'presence', null, null, null);
